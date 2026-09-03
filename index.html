@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SECRET TALK</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#080b12;color:#f5f7ff}button,input,select{font:inherit}button{cursor:pointer}
+:root{--panel:#111624;--panel2:#171d2d;--line:#293148;--muted:#8993aa;--accent:#6b5cff}
+.app{height:100dvh;display:flex;background:radial-gradient(circle at 20% 0,#202653 0,#080b12 45%);overflow:hidden}
+.sidebar{width:310px;flex:none;border-right:1px solid var(--line);background:rgba(12,16,27,.92);padding:20px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.logo{font-size:24px;font-weight:950;letter-spacing:2px}.sub{color:var(--muted);font-size:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}.profile{display:flex;gap:10px;align-items:center}.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#755cff,#25c8ff);font-weight:900}
+.dot{width:9px;height:9px;background:#55e982;border-radius:50%;box-shadow:0 0 12px #55e982}.sidebtn{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:#fff;text-align:left}.sidebtn:hover{background:#20273a}.danger{border-color:#5b2936;background:#25151d;color:#ff91a8}
+.main{min-width:0;flex:1;display:flex;flex-direction:column}.top{height:70px;flex:none;padding:0 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:rgba(9,12,20,.8);backdrop-filter:blur(14px)}.top-left{display:flex;align-items:center;gap:12px}.roomname{font-weight:900}.status{font-size:12px;color:#58e888}.messages{flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:11px}.msg{max-width:min(72%,560px);background:var(--panel2);border:1px solid var(--line);border-radius:17px;padding:11px 14px;align-self:flex-start;word-break:break-word}.msg.me{align-self:flex-end;background:linear-gradient(135deg,#6655f5,#477aff);border:0}.msgname{font-size:11px;font-weight:800;color:#b6bdd0;margin-bottom:4px}.msg.me .msgname{color:#e4e5ff}.meta{font-size:10px;color:#a4acc0;margin-top:5px}.composer{padding:13px 18px max(13px,env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:9px;background:#0d111b}.composer input{min-width:0;flex:1;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:#fff;outline:0}.iconbtn,.send{border:0;border-radius:13px;padding:0 14px;background:#242b40;color:white}.send{background:var(--accent);font-weight:900}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:18px}.modal{width:min(560px,100%);max-height:90dvh;overflow:auto;background:#121726;border:1px solid #303850;border-radius:22px;padding:22px;box-shadow:0 30px 100px #000}.field{margin:12px 0}.field label{display:block;color:#aeb7ca;font-size:12px;margin-bottom:6px}.field input,.field select{width:100%;padding:12px;border-radius:12px;border:1px solid #303850;background:#0b0f18;color:#fff}.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}.primary,.secondary{border:0;border-radius:12px;padding:11px 15px}.primary{background:var(--accent);color:#fff;font-weight:800}.secondary{background:#252c40;color:#fff}.hidden{display:none!important}
+.roomlist{display:flex;flex-direction:column;gap:8px;margin-top:10px}.roomitem{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:11px;border:1px solid var(--line);background:#0d111c;border-radius:12px}.roomitem b{font-size:13px}.roomitem button{padding:7px 9px;border:0;border-radius:9px;background:#242b40;color:white}.roomitem .del{background:#3b1d27;color:#ff9aac}
+.foodgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.foodopt{padding:11px;border:1px solid var(--line);border-radius:11px;background:#0d111c;color:#fff}.foodopt.active{border-color:#7b6dff;background:#29234e}
+.start{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 0,#252c61,#080b12 60%)}.startcard{width:min(520px,100%);background:rgba(18,23,38,.96);border:1px solid #303850;border-radius:26px;padding:28px;box-shadow:0 35px 100px #000}.startlogo{text-align:center;font-size:31px;font-weight:950;letter-spacing:2px}.startdesc{text-align:center;color:var(--muted);font-size:13px;margin:5px 0 22px}.startnote{color:#788399;font-size:11px;line-height:1.6;margin:13px 0}.error{color:#ff718d;font-size:12px;min-height:18px}
+.mobile-menu{display:none}
+@media(max-width:760px){.sidebar{display:none}.mobile-menu{display:block}.top{padding:0 14px}.messages{padding:15px 12px}.msg{max-width:88%}.composer{padding-left:10px;padding-right:10px}.send{padding:0 12px}.modal{padding:18px}.logo{font-size:21px}}
+</style>
+</head>
+<body>
+<div id="start" class="start">
+ <div class="startcard">
+  <div class="startlogo">🔒 SECRET TALK</div><div class="startdesc">로그인 없이 친구와 연결되는 비밀 메신저</div>
+  <div class="field"><label>닉네임 *</label><input id="nick" maxlength="20" placeholder="친구에게 보일 이름"></div>
+  <div class="field"><label>방 코드</label><input id="startRoom" maxlength="12" placeholder="새 방이면 비워두세요"></div>
+  <div class="field"><label>방 비밀번호 *</label><input id="startPw" type="password" maxlength="40" placeholder="방을 보호할 비밀번호"></div>
+  <div class="startnote">새 방은 방 코드를 비워두면 자동 생성됩니다. 기존 방은 친구가 준 코드와 비밀번호를 사용하세요. 같은 방에서는 닉네임을 중복해서 사용할 수 없습니다.</div>
+  <div id="startErr" class="error"></div><button class="primary" style="width:100%" onclick="startSession()">입장하기 →</button>
+ </div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+ <div><div class="logo">🔒 SECRET TALK</div><div class="sub">PRIVATE • P2P MESSENGER</div></div>
+ <div class="card profile"><div class="avatar" id="avatar">ME</div><div style="flex:1"><b id="myNick">-</b><div class="sub" id="myStatus">상태메시지 없음</div></div><div class="dot"></div></div>
+ <button class="sidebtn" onclick="openStatus()">📝 상태메시지</button>
+ <button class="sidebtn" onclick="openRooms()">🔗 방 관리</button>
+ <button class="sidebtn" onclick="openFood()">🍴 뭐 먹지?</button>
+ <button class="sidebtn danger" onclick="leaveRoom()">🚪 현재 방 나가기</button>
+ <div class="card" style="margin-top:auto"><div class="sub">현재 방</div><b id="roomCode">-</b><button class="sidebtn" style="margin-top:9px" onclick="copyRoom()">📋 코드 복사</button></div>
+</aside>
+
+<main class="main">
+<header class="top"><div class="top-left"><button class="iconbtn mobile-menu" onclick="openRooms()">☰</button><div><div class="roomname" id="roomTitle">연결 준비 중</div><div class="status" id="conn">● 대기 중</div></div></div><div class="sub">P2P CHAT · 🧹 NO CHAT HISTORY</div></header>
+<section id="messages" class="messages"></section>
+<footer class="composer"><button class="iconbtn" onclick="document.getElementById('file').click()">📎</button><button class="iconbtn" onclick="openFood()">🍴</button><input id="text" placeholder="비밀 메시지를 입력..." onkeydown="if(event.key==='Enter')sendText()"><button class="send" onclick="sendText()">➤</button><input id="file" type="file" hidden onchange="sendFile(this.files[0])"></footer>
+</main>
+</div>
+<div id="modal" class="overlay hidden"><div id="modalBody" class="modal"></div></div>
+
+<script>
+let ws=null,room="",nickname="",roomPassword="",pc=null,dc=null,isHost=false;
+const ice={iceServers:[{urls:"stun:stun.l.google.com:19302"}]};
+const $=x=>document.getElementById(x);
+const foods=["🍗 치킨","🍜 마라탕","🍣 초밥","🍕 피자","🍔 햄버거","🍝 파스타","🍛 카레","🥟 만두","🍲 김치찌개","🌮 타코","🍙 삼각김밥","🍦 아이스크림"];
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function randRoom(){return Math.random().toString(36).slice(2,8).toUpperCase()}
+function show(html){$("modalBody").innerHTML=html;$("modal").classList.remove("hidden")}
+function close(){ $("modal").classList.add("hidden") }
+function addMsg(text,me=false,html=false,name=null){
+ const d=document.createElement("div");d.className="msg"+(me?" me":"");
+ if(!me)d.innerHTML=`<div class="msgname">${esc(name||"친구")}</div>`;
+ const body=document.createElement("div"); if(html)body.innerHTML=text;else body.textContent=text;d.appendChild(body);
+ const m=document.createElement("div");m.className="meta";m.textContent=me?"나":"받음";d.appendChild(m);
+ $("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight;
+}
+function startSession(){
+ nickname=$("nick").value.trim();room=($("startRoom").value||"").trim().toUpperCase();roomPassword=$("startPw").value;
+ if(nickname.length<2){$("startErr").textContent="닉네임은 2자 이상 입력하세요.";return}
+ if(!roomPassword){$("startErr").textContent="방 비밀번호를 입력하세요.";return}
+ if(!room)room=randRoom();
+ $("start").classList.add("hidden");setupUI();connect();
+}
+function setupUI(){$("myNick").textContent=nickname;$("avatar").textContent=nickname.slice(0,2).toUpperCase();$("roomCode").textContent=room;$("roomTitle").textContent="ROOM "+room;addMsg("방에 입장했습니다. 친구가 연결되면 바로 채팅할 수 있어요.",false,false,"SYSTEM")}
+function connect(){
+ const proto=location.protocol==="https:"?"wss":"ws";
+ ws=new WebSocket(`${proto}://${location.host}`);
+ ws.onopen=()=>ws.send(JSON.stringify({type:"join",room,nickname,password:roomPassword}));
+ ws.onmessage=e=>signal(JSON.parse(e.data));ws.onclose=()=>setConn("● 서버 연결 종료");
+ ws.onerror=()=>setConn("● 서버 연결 오류");
+}
+function setConn(x){$("conn").textContent=x}
+async function signal(m){
+ if(m.type==="error"){alert(m.message);location.reload();return}
+ if(m.type==="joined"){isHost=m.initiator;return}
+ if(m.type==="peer-ready"){setConn("● 친구 발견 · 연결 중");if(isHost)makeOffer();return}
+ if(m.type==="peer-left"){setConn("● 친구가 나갔습니다");return}
+ if(m.type==="offer"){await ensurePC(false);await pc.setRemoteDescription(m.sdp);let a=await pc.createAnswer();await pc.setLocalDescription(a);sendSignal({type:"answer",sdp:pc.localDescription})}
+ if(m.type==="answer"&&pc)await pc.setRemoteDescription(m.sdp);
+ if(m.type==="candidate"&&pc){try{await pc.addIceCandidate(m.candidate)}catch(e){}}
+}
+async function ensurePC(host){
+ if(pc)return;pc=new RTCPeerConnection(ice);
+ pc.onicecandidate=e=>{if(e.candidate)sendSignal({type:"candidate",candidate:e.candidate})};
+ pc.onconnectionstatechange=()=>{if(pc.connectionState==="connected")setConn("● 친구와 연결됨");if(pc.connectionState==="failed")setConn("● 연결 실패")};
+ pc.ondatachannel=e=>setupDC(e.channel);if(host){dc=pc.createDataChannel("chat");setupDC(dc)}
+}
+async function makeOffer(){await ensurePC(true);let o=await pc.createOffer();await pc.setLocalDescription(o);sendSignal({type:"offer",sdp:pc.localDescription})}
+function sendSignal(data){if(ws&&ws.readyState===1)ws.send(JSON.stringify({type:"signal",room,data}))}
+function setupDC(ch){dc=ch;dc.binaryType="arraybuffer";dc.onopen=()=>setConn("● 친구와 연결됨");dc.onclose=()=>setConn("● 채널 종료");dc.onmessage=receive}
+function sendText(){
+ const v=$("text").value.trim();if(!v)return;if(!dc||dc.readyState!=="open"){alert("친구가 아직 연결되지 않았어요.");return}
+ dc.send(JSON.stringify({kind:"text",text:v,sender:nickname}));addMsg(v,true);$("text").value="";
+}
+let incoming=null;
+function receive(e){
+ if(typeof e.data==="string"){let m=JSON.parse(e.data);
+  if(m.kind==="text")addMsg(m.text,false,false,m.sender);
+  if(m.kind==="file-start"){incoming={name:m.name,size:m.size,mime:m.mime,chunks:[],received:0};addMsg(`📎 ${m.name} · 받는 중...`,false,false,m.sender)}
+  if(m.kind==="file-end"&&incoming){let b=new Blob(incoming.chunks,{type:incoming.mime});let u=URL.createObjectURL(b);addMsg(`<div><b>📎 ${esc(incoming.name)}</b><div class="meta">${bytes(incoming.size)}</div><a href="${u}" download="${esc(incoming.name)}" style="display:inline-block;margin-top:8px;color:white">📥 다운로드</a></div>`,false,true,"친구");incoming=null}
+ }else if(incoming){incoming.chunks.push(e.data);incoming.received+=e.data.byteLength}
+}
+async function sendFile(file){
+ if(!file)return;if(!dc||dc.readyState!=="open"){alert("친구가 아직 연결되지 않았어요.");return}
+ dc.send(JSON.stringify({kind:"file-start",name:file.name,size:file.size,mime:file.type}));
+ const chunk=16*1024;for(let i=0;i<file.size;i+=chunk){while(dc.bufferedAmount>2e6)await new Promise(r=>setTimeout(r,20));dc.send(await file.slice(i,i+chunk).arrayBuffer())}
+ dc.send(JSON.stringify({kind:"file-end"}));addMsg(`<div>📎 <b>${esc(file.name)}</b><div class="meta">${bytes(file.size)} · 전송 완료</div></div>`,true,true);
+}
+function bytes(n){return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB"}
+function copyRoom(){navigator.clipboard?.writeText(room);alert("방 코드가 복사되었습니다: "+room)}
+function openStatus(){show(`<h2>📝 상태메시지</h2><div class="field"><label>상태</label><input id="statusInput" maxlength="40" value="${esc(localStorage.secretStatus||"")}" placeholder="오늘은 치킨이 땡김 🍗"></div><div class="actions"><button class="secondary" onclick="close()">취소</button><button class="primary" onclick="saveStatus()">저장</button></div>`)}
+function saveStatus(){let v=$("statusInput").value.trim();localStorage.secretStatus=v;$("myStatus").textContent=v||"상태메시지 없음";close()}
+function openRooms(){
+ show(`<h2>🔗 방 관리</h2>
+ <button class="primary" style="width:100%" onclick="createRoomFromMenu()">＋ 새 방 만들기</button>
+ <div class="card" style="margin-top:12px"><div style="font-weight:800">현재 방</div><div class="sub" style="margin-top:4px">${esc(room||"없음")}</div><button class="sidebtn" style="margin-top:10px" onclick="copyRoom()">📋 코드 복사</button></div>
+ <div class="card" style="margin-top:10px"><div style="font-weight:800">🧹 기록 없음</div><div class="sub" style="margin-top:5px;line-height:1.6">채팅 내용과 파일은 서버/브라우저에 저장하지 않습니다. 새로고침하거나 방을 나가면 현재 화면의 대화도 사라집니다.</div></div>
+ <div class="actions"><button class="secondary" onclick="close()">닫기</button><button class="secondary" onclick="leaveRoom()">방 나가기</button></div>`);
+}
+function createRoomFromMenu(){
+ close(); if(ws) leaveRoom(false);
+ room=randRoom(); roomPassword="";
+ show(`<h2>🔐 새 방 만들기</h2><div class="field"><label>새 방 비밀번호 *</label><input id="newPw" type="password" maxlength="40" autocomplete="new-password"></div><div class="actions"><button class="secondary" onclick="close()">취소</button><button class="primary" onclick="createNew()">만들기</button></div>`);
+}
+function createNew(){
+ roomPassword=$("newPw").value;
+ if(!roomPassword){alert("비밀번호를 입력하세요.");return}
+ close(); $("messages").innerHTML=""; setupUI(); connect();
+}
+function openFood(){show(`<h2>🍴 뭐 먹지?</h2><div class="field"><label>음식 종류</label><div class="foodgrid">${["상관없음","한식","중식","일식","양식","분식"].map(x=>`<button class="foodopt" onclick="pick(this)">${x}</button>`).join("")}</div></div><div class="field"><label>매운맛</label><select><option>상관없음</option><option>안 매운 것</option><option>살짝 매운 것</option><option>매운 것</option></select></div><div class="field"><label>가격</label><select><option>상관없음</option><option>1만원 이하</option><option>1~2만원</option><option>2만원 이상</option></select></div><button class="primary" style="width:100%" onclick="recommend()">🎲 추천받기</button><div id="result"></div><div class="actions"><button class="secondary" onclick="close()">닫기</button></div>`)}
+function pick(x){document.querySelectorAll(".foodopt").forEach(b=>b.classList.remove("active"));x.classList.add("active")}
+function recommend(){let f=foods[Math.floor(Math.random()*foods.length)];$("result").innerHTML=`<div class="card" style="margin-top:14px"><div style="font-size:25px;font-weight:900">${f}</div><div class="sub">오늘의 추천</div><button class="sidebtn" style="margin-top:10px" onclick="sendRecommendation('${esc(f)}')">친구에게 보내기 →</button></div>`}
+function sendRecommendation(f){if(!dc||dc.readyState!=="open"){alert("친구가 아직 연결되지 않았어요.");return}let t=`🍴 오늘은 ${f} 어때?`;dc.send(JSON.stringify({kind:"text",text:t,sender:nickname}));addMsg(t,true);close()}
+window.addEventListener("load",()=>{
+ $("myStatus").textContent=localStorage.secretStatus||"상태메시지 없음";
+ // Explicitly remove any accidental chat-like local keys from older builds.
+ ["chatHistory","messages","secretChat","secretMessages"].forEach(k=>localStorage.removeItem(k));
+});
+window.addEventListener("beforeunload",()=>{
+ // Chat is intentionally ephemeral; no history is written anywhere.
+ $("messages").innerHTML="";
+});
+</script>
+</body></html>
