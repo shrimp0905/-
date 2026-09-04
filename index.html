@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080b12">
+<title>SECRET TALK</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#080b12;color:#f5f7ff}
+button,input,select{font:inherit}button{cursor:pointer}
+:root{--panel:#111624;--panel2:#171d2d;--line:#293148;--muted:#8993aa;--accent:#6b5cff}
+.hidden{display:none!important}
+.app{height:100dvh;display:flex;background:radial-gradient(circle at 20% 0,#202653 0,#080b12 45%);overflow:hidden}
+.sidebar{width:310px;flex:none;border-right:1px solid var(--line);background:rgba(12,16,27,.94);padding:20px;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.logo{font-size:24px;font-weight:950;letter-spacing:2px}.sub{color:var(--muted);font-size:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px}
+.profile{display:flex;gap:10px;align-items:center}.avatar{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#755cff,#25c8ff);font-weight:900}
+.dot{width:9px;height:9px;background:#55e982;border-radius:50%;box-shadow:0 0 12px #55e982}
+.sidebtn{width:100%;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--panel2);color:#fff;text-align:left}.sidebtn:hover{background:#20273a}
+.danger{border-color:#5b2936;background:#25151d;color:#ff91a8}
+.main{min-width:0;flex:1;display:flex;flex-direction:column}
+.top{height:70px;flex:none;padding:0 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:rgba(9,12,20,.84);backdrop-filter:blur(14px)}
+.top-left{display:flex;align-items:center;gap:12px}.roomname{font-weight:900}.status{font-size:12px;color:#58e888}
+.messages{flex:1;overflow:auto;padding:24px;display:flex;flex-direction:column;gap:11px}
+.msg{max-width:min(72%,560px);background:var(--panel2);border:1px solid var(--line);border-radius:17px;padding:11px 14px;align-self:flex-start;word-break:break-word}
+.msg.me{align-self:flex-end;background:linear-gradient(135deg,#6655f5,#477aff);border:0}
+.msg.system{align-self:center;background:transparent;border:0;color:#788399;font-size:12px;text-align:center;max-width:90%}
+.msgname{font-size:11px;font-weight:800;color:#b6bdd0;margin-bottom:4px}.msg.me .msgname{color:#e4e5ff}
+.meta{font-size:10px;color:#a4acc0;margin-top:5px}
+.composer{padding:13px 18px max(13px,env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;gap:9px;background:#0d111b}
+.composer input{min-width:0;flex:1;padding:13px 14px;border-radius:14px;border:1px solid var(--line);background:var(--panel2);color:#fff;outline:0}
+.iconbtn,.send{border:0;border-radius:13px;padding:0 14px;background:#242b40;color:white}.send{background:var(--accent);font-weight:900}
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.72);display:flex;align-items:center;justify-content:center;padding:18px}
+.modal{width:min(560px,100%);max-height:90dvh;overflow:auto;background:#121726;border:1px solid #303850;border-radius:22px;padding:22px;box-shadow:0 30px 100px #000}
+.modal h2{margin:0 0 10px}.field{margin:12px 0}.field label{display:block;color:#aeb7ca;font-size:12px;margin-bottom:6px}
+.field input,.field select{width:100%;padding:12px;border-radius:12px;border:1px solid #303850;background:#0b0f18;color:#fff;outline:0}
+.actions{display:flex;gap:9px;justify-content:flex-end;margin-top:18px}.primary,.secondary{border:0;border-radius:12px;padding:11px 15px}.primary{background:var(--accent);color:#fff;font-weight:800}.secondary{background:#252c40;color:#fff}
+.foodgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.foodopt{padding:11px;border:1px solid var(--line);border-radius:11px;background:#0d111c;color:#fff}.foodopt.active{border-color:#7b6dff;background:#29234e}
+.result{margin-top:14px}.resultcard{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px}
+.start{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:18px;background:radial-gradient(circle at 50% 0,#252c61,#080b12 60%)}
+.startcard{width:min(520px,100%);background:rgba(18,23,38,.97);border:1px solid #303850;border-radius:26px;padding:28px;box-shadow:0 35px 100px #000}
+.startlogo{text-align:center;font-size:31px;font-weight:950;letter-spacing:2px}.startdesc{text-align:center;color:var(--muted);font-size:13px;margin:5px 0 22px}
+.startnote{color:#788399;font-size:11px;line-height:1.6;margin:13px 0}.error{color:#ff718d;font-size:12px;min-height:18px}
+.mobile-menu{display:none}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:200;background:#20273a;border:1px solid #39445f;color:#fff;padding:11px 15px;border-radius:12px;box-shadow:0 12px 40px #000;opacity:0;pointer-events:none;transition:.2s}
+.toast.show{opacity:1}
+@media(max-width:760px){
+ .sidebar{display:none}.mobile-menu{display:block}.top{padding:0 14px}.top>.sub{display:none}
+ .messages{padding:15px 12px}.msg{max-width:88%}.composer{padding-left:10px;padding-right:10px}.send{padding:0 12px}.modal{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<div id="start" class="start">
+ <div class="startcard">
+  <div class="startlogo">🔒 SECRET TALK</div>
+  <div class="startdesc">로그인 없이 친구와 연결되는 비밀 메신저</div>
+  <div class="field"><label>닉네임 *</label><input id="nick" maxlength="20" autocomplete="nickname" placeholder="친구에게 보일 이름"></div>
+  <div class="field"><label>방 코드</label><input id="startRoom" maxlength="12" autocomplete="off" placeholder="새 방이면 비워두세요"></div>
+  <div class="field"><label>방 비밀번호 *</label><input id="startPw" type="password" maxlength="40" autocomplete="new-password" placeholder="방을 보호할 비밀번호"></div>
+  <div class="startnote">방 코드를 비우면 새 방이 자동 생성됩니다. 친구는 같은 방 코드와 비밀번호를 입력하면 됩니다. 같은 방의 닉네임은 중복할 수 없습니다.</div>
+  <div id="startErr" class="error"></div>
+  <button id="startBtn" class="primary" style="width:100%">입장하기 →</button>
+ </div>
+</div>
+
+<div class="app">
+<aside class="sidebar">
+ <div><div class="logo">🔒 SECRET TALK</div><div class="sub">PRIVATE • P2P • NO CHAT HISTORY</div></div>
+ <div class="card profile"><div class="avatar" id="avatar">ME</div><div style="flex:1"><b id="myNick">-</b><div class="sub" id="myStatus">상태메시지 없음</div></div><div class="dot"></div></div>
+ <button class="sidebtn" id="statusBtn">📝 상태메시지</button>
+ <button class="sidebtn" id="roomsBtn">🔗 방 관리</button>
+ <button class="sidebtn" id="foodBtn">🍴 뭐 먹지?</button>
+ <button class="sidebtn danger" id="leaveBtn">🚪 현재 방 나가기</button>
+ <div class="card" style="margin-top:auto"><div class="sub">현재 방</div><b id="roomCode">-</b><button class="sidebtn" style="margin-top:9px" id="copyBtn">📋 코드 복사</button></div>
+</aside>
+
+<main class="main">
+<header class="top">
+ <div class="top-left"><button class="iconbtn mobile-menu" id="mobileBtn">☰</button><div><div class="roomname" id="roomTitle">연결 준비 중</div><div class="status" id="conn">● 대기 중</div></div></div>
+ <div class="sub">P2P CHAT · 🧹 NO CHAT HISTORY</div>
+</header>
+<section id="messages" class="messages"></section>
+<footer class="composer">
+ <button class="iconbtn" id="fileBtn">📎</button><button class="iconbtn" id="foodQuickBtn">🍴</button>
+ <input id="text" maxlength="2000" placeholder="비밀 메시지를 입력...">
+ <button class="send" id="sendBtn">➤</button><input id="file" type="file" hidden>
+</footer>
+</main>
+</div>
+
+<div id="modal" class="overlay hidden"><div id="modalBody" class="modal"></div></div>
+<div id="toast" class="toast"></div>
+
+<script>
+"use strict";
+
+const $ = id => document.getElementById(id);
+const iceServers = {iceServers:[
+ {urls:"stun:stun.l.google.com:19302"},
+ {urls:"stun:stun1.l.google.com:19302"}
+]};
+
+let ws=null, pc=null, dc=null;
+let room="", nickname="", roomPassword="", isHost=false;
+let peerName="친구", connected=false, leaving=false;
+let pendingCandidates=[];
+let incoming=null;
+let statusText="";
+
+const FOOD_DB=[
+ {name:"김치찌개",type:"한식",spicy:"매운",price:10000},
+ {name:"불고기",type:"한식",spicy:"안 매운",price:15000},
+ {name:"비빔밥",type:"한식",spicy:"살짝 매운",price:10000},
+ {name:"제육볶음",type:"한식",spicy:"매운",price:12000},
+ {name:"짜장면",type:"중식",spicy:"안 매운",price:8000},
+ {name:"짬뽕",type:"중식",spicy:"매운",price:9000},
+ {name:"탕수육",type:"중식",spicy:"안 매운",price:18000},
+ {name:"마라탕",type:"중식",spicy:"매운",price:14000},
+ {name:"초밥",type:"일식",spicy:"안 매운",price:18000},
+ {name:"라멘",type:"일식",spicy:"살짝 매운",price:12000},
+ {name:"돈카츠",type:"일식",spicy:"안 매운",price:13000},
+ {name:"우동",type:"일식",spicy:"안 매운",price:9000},
+ {name:"파스타",type:"양식",spicy:"안 매운",price:15000},
+ {name:"피자",type:"양식",spicy:"살짝 매운",price:18000},
+ {name:"햄버거",type:"양식",spicy:"안 매운",price:12000},
+ {name:"샐러드",type:"양식",spicy:"안 매운",price:10000},
+ {name:"떡볶이",type:"분식",spicy:"매운",price:7000},
+ {name:"김밥",type:"분식",spicy:"안 매운",price:5000},
+ {name:"순대",type:"분식",spicy:"안 매운",price:7000},
+ {name:"라볶이",type:"분식",spicy:"매운",price:8000}
+];
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function randRoom(){return Math.random().toString(36).slice(2,8).toUpperCase();}
+function bytes(n){return n<1024?n+" B":n<1048576?(n/1024).toFixed(1)+" KB":(n/1048576).toFixed(1)+" MB";}
+function setConn(t){$("conn").textContent=t;}
+function toast(t){const x=$("toast");x.textContent=t;x.classList.add("show");clearTimeout(toast.timer);toast.timer=setTimeout(()=>x.classList.remove("show"),1800);}
+function closeModal(){$("modal").classList.add("hidden");$("modalBody").replaceChildren();}
+function showModal(nodeOrHtml){
+ $("modalBody").innerHTML="";
+ if(typeof nodeOrHtml==="string") $("modalBody").innerHTML=nodeOrHtml;
+ else $("modalBody").appendChild(nodeOrHtml);
+ $("modal").classList.remove("hidden");
+}
+$("modal").addEventListener("click",e=>{if(e.target===$("modal"))closeModal();});
+
+function addSystem(text){
+ const d=document.createElement("div");d.className="msg system";d.textContent=text;$("messages").appendChild(d);
+ $("messages").scrollTop=$("messages").scrollHeight;
+}
+function addMsg(text,me,name){
+ const d=document.createElement("div");d.className="msg"+(me?" me":"");
+ if(!me){const n=document.createElement("div");n.className="msgname";n.textContent=name||"친구";d.appendChild(n);}
+ const b=document.createElement("div");b.textContent=text;d.appendChild(b);
+ const m=document.createElement("div");m.className="meta";m.textContent=me?"나":"받음";d.appendChild(m);
+ $("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight;
+}
+function addFileMsg(name,size,me,url){
+ const d=document.createElement("div");d.className="msg"+(me?" me":"");
+ if(!me){const n=document.createElement("div");n.className="msgname";n.textContent=peerName;d.appendChild(n);}
+ const b=document.createElement("div");
+ const strong=document.createElement("b");strong.textContent="📎 "+name;b.appendChild(strong);
+ const meta=document.createElement("div");meta.className="meta";meta.textContent=bytes(size);b.appendChild(meta);
+ if(url){const a=document.createElement("a");a.href=url;a.download=name;a.textContent="📥 다운로드";a.style="display:inline-block;margin-top:8px;color:white";b.appendChild(a);}
+ d.appendChild(b);$("messages").appendChild(d);$("messages").scrollTop=$("messages").scrollHeight;
+}
+
+function resetPeer(){
+ if(dc){try{dc.close()}catch{}}
+ if(pc){try{pc.close()}catch{}}
+ dc=null;pc=null;connected=false;pendingCandidates=[];incoming=null;
+}
+function leaveRoom(reload=true){
+ leaving=true;
+ resetPeer();
+ if(ws){try{ws.close()}catch{}}
+ ws=null; room=""; roomPassword="";
+ if(reload) location.reload();
+}
+function setupUI(){
+ $("myNick").textContent=nickname;
+ $("avatar").textContent=nickname.slice(0,2).toUpperCase();
+ $("roomCode").textContent=room;
+ $("roomTitle").textContent="ROOM "+room;
+ $("messages").replaceChildren();
+ addSystem("이 방의 채팅은 저장되지 않습니다. 새로고침하거나 나가면 사라집니다.");
+}
+function startSession(){
+ const n=$("nick").value.trim();
+ const r=$("startRoom").value.trim().toUpperCase();
+ const p=$("startPw").value;
+ $("startErr").textContent="";
+ if(n.length<2||n.length>20){$("startErr").textContent="닉네임은 2~20자로 입력하세요.";return;}
+ if(!p){$("startErr").textContent="방 비밀번호를 입력하세요.";return;}
+ nickname=n; room=r||randRoom(); roomPassword=p;
+ $("start").classList.add("hidden");setupUI();connect();
+}
+
+function connect(){
+ resetPeer();
+ leaving=false;
+ setConn("● 서버 연결 중...");
+ const proto=location.protocol==="https:"?"wss":"ws";
+ const host=location.host;
+ if(!host){setConn("● 브라우저에서 직접 연 파일은 서버 연결이 안 됩니다.");return;}
+ try{ws=new WebSocket(proto+"://"+host);}
+ catch(e){setConn("● 서버 연결 생성 실패");return;}
+ ws.onopen=()=>{
+   setConn("● 방 입장 확인 중...");
+   ws.send(JSON.stringify({type:"join",room,nickname,password:roomPassword}));
+ };
+ ws.onmessage=e=>{
+   let m;try{m=JSON.parse(e.data)}catch{return}
+   handleServer(m);
+ };
+ ws.onerror=()=>setConn("● 서버 연결 오류");
+ ws.onclose=()=>{if(!leaving){setConn("● 서버 연결 종료");}};
+}
+async function handleServer(m){
+ if(m.type==="error"){
+   $("start").classList.remove("hidden");
+   $("startErr").textContent=m.message||"입장할 수 없습니다.";
+   if(ws){try{ws.close()}catch{}}
+   return;
+ }
+ if(m.type==="joined"){isHost=!!m.initiator;setConn("● 방 입장 완료 · 친구 대기 중");return;}
+ if(m.type==="peer-ready"){
+   peerName=m.nickname||"친구";
+   setConn("● 친구 발견 · WebRTC 연결 중...");
+   if(isHost) await makeOffer();
+   return;
+ }
+ if(m.type==="offer"){
+   try{
+     await ensurePC(false);
+     await pc.setRemoteDescription(m.sdp);
+     await flushCandidates();
+     const ans=await pc.createAnswer();
+     await pc.setLocalDescription(ans);
+     sendSignal({type:"answer",sdp:pc.localDescription});
+   }catch(e){setConn("● 연결 협상 실패");}
+   return;
+ }
+ if(m.type==="answer"){
+   try{if(pc){await pc.setRemoteDescription(m.sdp);await flushCandidates();}}catch(e){}
+   return;
+ }
+ if(m.type==="candidate"){
+   if(!pc)return;
+   try{
+     if(pc.remoteDescription) await pc.addIceCandidate(m.candidate);
+     else pendingCandidates.push(m.candidate);
+   }catch(e){}
+   return;
+ }
+ if(m.type==="peer-left"){
+   resetPeer();setConn("● 친구가 나갔습니다 · 다시 입장할 수 있습니다");addSystem("친구가 방을 나갔습니다.");return;
+ }
+ if(m.type==="room-deleted"){
+   alert("방이 삭제되었습니다.");location.reload();return;
+ }
+}
+async function ensurePC(host){
+ if(pc)return;
+ pc=new RTCPeerConnection(iceServers);
+ pc.onicecandidate=e=>{if(e.candidate)sendSignal({type:"candidate",candidate:e.candidate});};
+ pc.onconnectionstatechange=()=>{
+   const s=pc.connectionState;
+   if(s==="connected"){connected=true;setConn("● 친구와 연결됨");}
+   else if(s==="connecting")setConn("● 친구와 연결 중...");
+   else if(s==="disconnected")setConn("● 연결이 잠시 끊겼습니다");
+   else if(s==="failed"){setConn("● 직접 연결 실패 · 재연결 중...");retryPeerConnection();}
+   else if(s==="closed")setConn("● 연결 종료");
+ };
+ pc.oniceconnectionstatechange=()=>{
+   if(pc.iceConnectionState==="failed"&&pc.connectionState!=="connected") retryPeerConnection();
+ };
+ pc.ondatachannel=e=>setupDC(e.channel);
+ if(host)setupDC(pc.createDataChannel("secret-chat",{ordered:true}));
+}
+async function makeOffer(){
+ try{
+   await ensurePC(true);
+   const offer=await pc.createOffer();
+   await pc.setLocalDescription(offer);
+   sendSignal({type:"offer",sdp:pc.localDescription});
+ }catch(e){setConn("● 연결 시작 실패");}
+}
+function sendSignal(data){
+ if(ws&&ws.readyState===WebSocket.OPEN)ws.send(JSON.stringify({type:"signal",data}));
+}
+async function flushCandidates(){
+ const list=pendingCandidates.splice(0);
+ for(const c of list){try{await pc.addIceCandidate(c)}catch(e){}}
+}
+function setupDC(ch){
+ if(dc&&dc!==ch){try{dc.close()}catch{}}
+ dc=ch;dc.binaryType="arraybuffer";
+ dc.onopen=()=>{connected=true;setConn("● 친구와 연결됨");sendStatus();};
+ dc.onclose=()=>{connected=false;setConn("● 데이터 채널 종료");};
+ dc.onerror=()=>setConn("● 데이터 채널 오류");
+ dc.onmessage=receiveData;
+}
+function retryPeerConnection(){
+ if(leaving)return;
+ const old=pc;try{old?.close()}catch{};pc=null;dc=null;connected=false;
+ setTimeout(()=>{if(!leaving&&ws?.readyState===WebSocket.OPEN){setConn("● 재연결 중...");if(isHost)makeOffer();}},700);
+}
+function sendStatus(){
+ if(dc?.readyState==="open")dc.send(JSON.stringify({kind:"status",text:statusText,sender:nickname}));
+}
+function sendText(){
+ const v=$("text").value.trim();if(!v)return;
+ if(!dc||dc.readyState!=="open"){toast("친구가 아직 연결되지 않았어요.");return;}
+ dc.send(JSON.stringify({kind:"text",text:v,sender:nickname}));
+ addMsg(v,true,nickname);$("text").value="";
+}
+function receiveData(e){
+ if(typeof e.data==="string"){
+   let m;try{m=JSON.parse(e.data)}catch{return}
+   if(m.kind==="text"){addMsg(m.text,false,m.sender||peerName);return;}
+   if(m.kind==="status"){peerName=m.sender||peerName;return;}
+   if(m.kind==="file-start"){
+     if(m.size>50*1024*1024){addSystem("친구가 보낸 파일이 너무 큽니다.");incoming=null;return;}
+     incoming={name:m.name,size:m.size,mime:m.mime||"application/octet-stream",chunks:[],received:0,sender:m.sender||peerName};
+     addSystem("📎 "+m.name+" · 파일 수신 중...");
+     return;
+   }
+   if(m.kind==="file-end"&&incoming){
+     const b=new Blob(incoming.chunks,{type:incoming.mime});
+     const u=URL.createObjectURL(b);
+     addFileMsg(incoming.name,incoming.size,false,u);
+     incoming=null;
+     return;
+   }
+ }else if(incoming){
+   incoming.chunks.push(e.data);incoming.received+=e.data.byteLength;
+ }
+}
+async function sendFile(file){
+ if(!file)return;
+ if(file.size>50*1024*1024){toast("파일은 50MB 이하만 보낼 수 있어요.");$("file").value="";return;}
+ if(!dc||dc.readyState!=="open"){toast("친구가 아직 연결되지 않았어요.");$("file").value="";return;}
+ try{
+   dc.send(JSON.stringify({kind:"file-start",name:file.name,size:file.size,mime:file.type,sender:nickname}));
+   const chunk=16*1024;
+   for(let i=0;i<file.size;i+=chunk){
+     while(dc.bufferedAmount>2*1024*1024)await new Promise(r=>setTimeout(r,25));
+     dc.send(await file.slice(i,i+chunk).arrayBuffer());
+   }
+   dc.send(JSON.stringify({kind:"file-end"}));
+   addFileMsg(file.name,file.size,true,null);
+ }catch(e){toast("파일 전송에 실패했습니다.");}
+ $("file").value="";
+}
+
+function openStatus(){
+ const current=esc(statusText);
+ showModal(`<h2>📝 상태메시지</h2>
+ <div class="field"><label>내 상태</label><input id="statusInput" maxlength="40" value="${current}" placeholder="오늘은 치킨이 땡김 🍗"></div>
+ <div class="sub">상태메시지도 서버에는 저장하지 않습니다.</div>
+ <div class="actions"><button class="secondary" id="mCancel">취소</button><button class="primary" id="mSave">저장</button></div>`);
+ $("mCancel").onclick=closeModal;
+ $("mSave").onclick=()=>{statusText=$("statusInput").value.trim();$("myStatus").textContent=statusText||"상태메시지 없음";sendStatus();closeModal();};
+}
+function openRooms(){
+ showModal(`<h2>🔗 방 관리</h2>
+ <div class="card"><div class="sub">현재 방</div><b>${esc(room)}</b><div class="actions"><button class="secondary" id="mCopy">📋 코드 복사</button><button class="primary" id="mNew">＋ 새 방</button></div></div>
+ <div class="card" style="margin-top:10px"><b>🧹 기록 없음</b><div class="sub" style="margin-top:6px;line-height:1.6">채팅 내용·파일은 서버와 브라우저에 저장하지 않습니다. 방을 나가거나 새로고침하면 대화 화면이 사라집니다.</div></div>
+ <div class="actions"><button class="secondary" id="mClose">닫기</button><button class="secondary" id="mLeave">방 나가기</button></div>`);
+ $("mClose").onclick=closeModal;$("mCopy").onclick=copyRoom;$("mLeave").onclick=()=>leaveRoom(true);$("mNew").onclick=openNewRoom;
+}
+function openNewRoom(){
+ showModal(`<h2>🔐 새 방 만들기</h2>
+ <div class="field"><label>새 방 비밀번호 *</label><input id="newPw" type="password" maxlength="40" autocomplete="new-password"></div>
+ <div class="sub">현재 방은 종료되고 새 방으로 이동합니다.</div>
+ <div class="actions"><button class="secondary" id="mCancel">취소</button><button class="primary" id="mCreate">새 방 만들기</button></div>`);
+ $("mCancel").onclick=closeModal;
+ $("mCreate").onclick=()=>{
+   const p=$("newPw").value;
+   if(!p){toast("비밀번호를 입력하세요.");return;}
+   room=randRoom();roomPassword=p;resetPeer();if(ws){try{ws.close()}catch{}}
+   closeModal();setupUI();connect();
+ };
+}
+function copyRoom(){
+ if(navigator.clipboard&&window.isSecureContext){
+   navigator.clipboard.writeText(room).then(()=>toast("방 코드가 복사되었습니다."));
+ }else{
+   const ta=document.createElement("textarea");ta.value=room;document.body.appendChild(ta);ta.select();
+   try{document.execCommand("copy");toast("방 코드가 복사되었습니다.");}catch{alert("방 코드: "+room)}ta.remove();
+ }
+}
+function openFood(){
+ showModal(`<h2>🍴 뭐 먹지?</h2>
+ <div class="field"><label>음식 종류</label><div class="foodgrid" id="foodTypes">
+ ${["상관없음","한식","중식","일식","양식","분식"].map(x=>`<button class="foodopt" data-type="${x}">${x}</button>`).join("")}</div></div>
+ <div class="field"><label>매운맛</label><select id="spicy"><option value="상관없음">상관없음</option><option value="안 매운">안 매운 것</option><option value="살짝 매운">살짝 매운 것</option><option value="매운">매운 것</option></select></div>
+ <div class="field"><label>가격</label><select id="price"><option value="0">상관없음</option><option value="10000">1만원 이하</option><option value="20000">2만원 이하</option><option value="999999">2만원 이상</option></select></div>
+ <button class="primary" style="width:100%" id="recommendBtn">🎲 조건에 맞게 추천</button>
+ <div id="foodResult" class="result"></div>
+ <div class="actions"><button class="secondary" id="foodClose">닫기</button></div>`);
+ document.querySelectorAll("#foodTypes .foodopt").forEach(b=>b.onclick=()=>{document.querySelectorAll("#foodTypes .foodopt").forEach(x=>x.classList.remove("active"));b.classList.add("active");});
+ $("recommendBtn").onclick=recommendFood;$("foodClose").onclick=closeModal;
+}
+function recommendFood(){
+ const typeBtn=document.querySelector("#foodTypes .active");
+ const type=typeBtn?.dataset.type||"상관없음";
+ const spicy=$("spicy").value;
+ const budget=Number($("price").value);
+ let candidates=FOOD_DB.filter(f=>
+   (type==="상관없음"||f.type===type) &&
+   (spicy==="상관없음"||f.spicy===spicy) &&
+   (budget===0||(budget===999999?f.price>=20000:f.price<=budget))
+ );
+ if(!candidates.length){
+   $("foodResult").innerHTML=`<div class="resultcard"><b>조건에 맞는 음식이 없어요 😭</b><div class="sub" style="margin-top:6px">매운맛이나 가격 조건을 조금 완화해 보세요.</div></div>`;
+   return;
+ }
+ const f=candidates[Math.floor(Math.random()*candidates.length)];
+ $("foodResult").innerHTML=`<div class="resultcard"><div style="font-size:24px;font-weight:900">${esc(f.name)}</div><div class="sub">${f.type} · ${f.spicy} · 약 ${f.price.toLocaleString()}원</div><button class="sidebtn" style="margin-top:10px" id="sendFood">친구에게 보내기 →</button></div>`;
+ $("sendFood").onclick=()=>sendRecommendation(f);
+}
+function sendRecommendation(f){
+ if(!dc||dc.readyState!=="open"){toast("친구가 아직 연결되지 않았어요.");return;}
+ const t=`🍴 오늘은 ${f.name} 어때? (${f.type}, 약 ${f.price.toLocaleString()}원)`;
+ dc.send(JSON.stringify({kind:"text",text:t,sender:nickname}));addMsg(t,true,nickname);closeModal();
+}
+
+$("startBtn").onclick=startSession;
+$("nick").addEventListener("keydown",e=>{if(e.key==="Enter")$("startRoom").focus()});
+$("startPw").addEventListener("keydown",e=>{if(e.key==="Enter")startSession();});
+$("sendBtn").onclick=sendText;
+$("text").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();sendText();}});
+$("fileBtn").onclick=()=>$("file").click();
+$("file").onchange=e=>sendFile(e.target.files[0]);
+$("foodBtn").onclick=openFood;$("foodQuickBtn").onclick=openFood;
+$("statusBtn").onclick=openStatus;$("roomsBtn").onclick=openRooms;$("mobileBtn").onclick=openRooms;
+$("leaveBtn").onclick=()=>leaveRoom(true);$("copyBtn").onclick=copyRoom;
+
+window.addEventListener("pagehide",()=>{leaving=true;try{dc?.close()}catch{}try{pc?.close()}catch{}try{ws?.close()}catch{}$("messages").replaceChildren();});
+window.addEventListener("load",()=>{$("messages").replaceChildren();});
+</script>
+</body>
+</html>
